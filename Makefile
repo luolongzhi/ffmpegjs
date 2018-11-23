@@ -76,6 +76,7 @@ build/dist/lib/libmp3lame.so:
 	cd build/lame-$(LAME_VERSION) && \
 	emconfigure ./configure \
 		--prefix="$(WORK_PATH)/build/dist" \
+		--host=x86-none-linux \
 		--disable-static \
 		--disable-gtktest \
 		--disable-analyzer-hooks \
@@ -89,6 +90,7 @@ build/dist/lib/libfdk-aac.so:
 	cd build/fdk-aac-$(FDKAAC_VERSION) && \
 	emconfigure ./configure \
 		--prefix="$(WORK_PATH)/build/dist" \
+		--host=x86-none-linux \
 		--disable-static \
 		&& \
 	emmake make -j8 && \
@@ -99,7 +101,9 @@ build/dist/lib/libx264.so:
 	cd build/x264-$(X264_VERSION) && \
 	emconfigure ./configure \
 		--prefix="$(WORK_PATH)/build/dist" \
+		--host=x86-none-linux \
 		--disable-cli \
+		--disable-static \
 		--enable-shared \
 		--disable-opencl \
 		--disable-thread \
@@ -128,7 +132,9 @@ COMMON_DECODERS = \
 	ass ssa srt webvtt
 
 FFMPEG_COMMON_ARGS = \
-	--cc=gcc \
+	--cc=emcc \
+	--enable-cross-compile \
+	--target-os=none \
 	--target-os=none \
 	--arch=x86 \
 	--disable-runtime-cpudetect \
@@ -166,20 +172,23 @@ FFMPEG_COMMON_ARGS = \
 	--disable-xlib \
 	--disable-zlib
 
-MP4_ENCODERS = libx264 libmp3lame aac libfdk_aac pcm_s16le pcm_s16be
+#MP4_ENCODERS = libx264 libmp3lame aac libfdk_aac pcm_s16le pcm_s16be
+MP4_ENCODERS = libx264 libmp3lame aac pcm_s16le pcm_s16be
 MP4_MUXERS = mp4 mp3 adts wav null
 
-ffmpeg: $(SOURCE_REDAY) $(SHARE_DEPS) 
+FFMPEG_PKG_PATH = ../build/dist/lib/pkgconfig
+
+ffmpeg: #$(SOURCE_REDAY) $(SHARE_DEPS) 
 	cd build/ffmpeg-$(FFMPEG_VERSION) && \
-	emconfigure ./configure \
+	EM_PKG_CONFIG_PATH=$(FFMPEG_PKG_PATH) emconfigure ./configure \
 		$(FFMPEG_COMMON_ARGS) \
 		$(addprefix --enable-encoder=,$(MP4_ENCODERS)) \
 		$(addprefix --enable-muxer=,$(MP4_MUXERS)) \
 		--enable-gpl \
 		--enable-nonfree \
 		--enable-libmp3lame \
-		--enable-libfdk-aac\
-		--enable-libx264 \
+		#--enable-libfdk-aac
+		--enable-libx264 
 		--extra-cflags="-I../dist/include" \
 		--extra-ldflags="-L../dist/lib" \
 		&& \
