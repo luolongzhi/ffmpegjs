@@ -172,7 +172,7 @@ FFMPEG_COMMON_ARGS = \
 MP4_ENCODERS = libx264 libmp3lame aac libfdk_aac pcm_s16le pcm_s16be
 MP4_MUXERS = mp4 mp3 adts wav null
 
-ffmpeg: #$(SOURCE_REDAY) $(SHARE_DEPS) 
+ffmpeg: $(SOURCE_REDAY) $(SHARE_DEPS) 
 	cd build/ffmpeg-$(FFMPEG_VERSION) && \
 	./configure \
 		$(FFMPEG_COMMON_ARGS) \
