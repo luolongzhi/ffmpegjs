@@ -172,8 +172,8 @@ FFMPEG_COMMON_ARGS = \
 	--disable-xlib \
 	--disable-zlib
 
-#MP4_ENCODERS = libx264 libmp3lame aac libfdk_aac pcm_s16le pcm_s16be
-MP4_ENCODERS = libx264 libmp3lame aac pcm_s16le pcm_s16be
+MP4_ENCODERS = libx264 libmp3lame aac libfdk_aac pcm_s16le pcm_s16be
+#MP4_ENCODERS = libx264 libmp3lame aac pcm_s16le pcm_s16be
 MP4_MUXERS = mp4 mp3 adts wav null
 
 FFMPEG_PKG_PATH = ../build/dist/lib/pkgconfig
@@ -187,8 +187,8 @@ ffmpeg: #$(SOURCE_REDAY) $(SHARE_DEPS)
 		--enable-gpl \
 		--enable-nonfree \
 		--enable-libmp3lame \
-		#--enable-libfdk-aac
-		--enable-libx264 
+		--enable-libfdk-aac \
+		--enable-libx264 \
 		--extra-cflags="-I../dist/include" \
 		--extra-ldflags="-L../dist/lib" \
 		&& \
