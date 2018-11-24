@@ -202,10 +202,9 @@ EMCC_COMMON_ARGS = \
 	-s TOTAL_MEMORY=67108864 \
 	-s OUTLINING_LIMIT=20000 \
 	-O3 --memory-init-file 0 \
-	--pre-js $(PRE_JS) \
 	-o $@
 
-ffmpeg.js: ffmpeg 
-	emcc $(FFMPEG_BC) $(SHARE_DEPS) \
+ffmpeg.js: #ffmpeg 
+	emcc build/ffmpeg.bc $(SHARE_DEPS) \
 		$(EMCC_COMMON_ARGS)
 
