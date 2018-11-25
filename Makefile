@@ -197,11 +197,19 @@ ffmpeg: #$(SOURCE_REDAY) $(SHARE_DEPS)
 
 FFMPEG_BC: build/ffmpeg.bc
 
+#EMCC_COMMON_ARGS = \
+	#--closure 1 \
+	#-s TOTAL_MEMORY=67108864 \
+	#-s OUTLINING_LIMIT=20000 \
+	#-s NO_EXIT_RUNTIME=0 \
+	#-O3 --memory-init-file 0 \
+	#-o $@
+
 EMCC_COMMON_ARGS = \
-	--closure 1 \
+	-s NO_EXIT_RUNTIME=0 \
 	-s TOTAL_MEMORY=67108864 \
-	-s OUTLINING_LIMIT=20000 \
-	-O3 --memory-init-file 0 \
+	--pre-js pre.js \
+	--post-js post.js \
 	-o $@
 
 ffmpeg.js: #ffmpeg 
