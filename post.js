@@ -1,4 +1,11 @@
   return __ffmpegjs_return;
 }
 
-module["exports"] = __ffmpegjs;
+
+if (typeof module !== 'undefined') {
+  //module["exports"] = __ffmpegjs;
+  module.exports = __ffmpegjs;
+}
+
+
+

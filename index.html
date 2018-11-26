@@ -1,0 +1,27 @@
+<script src="./ffmpeg.js"></script>
+<script src="./downFile.js"></script>
+<input type='file' onchange='openFile(event)'>
+<script>
+  var openFile = function(event) {
+    var input = event.target;
+
+    var reader = new FileReader();
+    reader.onload = function(){
+      var arrayBuffer = reader.result;
+
+      console.log(arrayBuffer.byteLength);
+
+      var result = __ffmpegjs({
+        MEMFS: [{name: "pm.wav", data: arrayBuffer}],
+        arguments: ["-i", "pm.wav", "-f", "mp3", "pm.mp3"],
+        stdin: function() {},
+      });
+
+
+    };
+    reader.readAsArrayBuffer(input.files[0]);
+
+  };
+</script>
+
+

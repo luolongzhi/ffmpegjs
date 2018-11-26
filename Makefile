@@ -209,7 +209,6 @@ FFMPEG_BC: build/ffmpeg.bc
 	#-o $@
 
 EMCC_COMMON_ARGS = \
-	-s NO_EXIT_RUNTIME=0 \
 	-s TOTAL_MEMORY=67108864 \
 	-s ASSERTIONS=1 \
 	--pre-js pre.js \
