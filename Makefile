@@ -21,10 +21,10 @@ SRC_OPUS = opus-$(OPUS_VERSION).tar.gz
 WORK_PATH := $(shell pwd)
 
 
-all: ffmpeg.js ffmpeg-worker.js
+all: ffmpeg.js ffmpeg-worker.js ffmpeg-g.js ffmpeg-worker-g.js
 clean: 
 	rm -rf build
-	rm ffmpeg.js ffmpeg-worker.js ffmpeg.wasm
+	rm ffmpeg*.js ffmpeg*.wasm
 cleanpc:
 	rm -rf buildpc
 
@@ -213,15 +213,32 @@ EMCC_COMMON_ARGS = \
 	-O2 \
 	-o $@
 
-ffmpeg.js: ffmpeg 
+EMCC_COMMON_ARGS_DEBUG = \
+	-s TOTAL_MEMORY=134217728\
+	-o $@
+
+ffmpeg.js: #ffmpeg 
 	emcc build/ffmpeg.bc $(SHARE_DEPS) \
 		--pre-js pre.js \
 		--post-js post.js \
 		$(EMCC_COMMON_ARGS)
 
-ffmpeg-worker.js: ffmpeg 
+ffmpeg-worker.js: #ffmpeg 
 	emcc build/ffmpeg.bc $(SHARE_DEPS) \
 		--pre-js pre-worker.js \
 		--post-js post-worker.js \
 		$(EMCC_COMMON_ARGS)
+
+ffmpeg-g.js: #ffmpeg 
+	emcc build/ffmpeg.bc $(SHARE_DEPS) \
+		--pre-js pre.js \
+		--post-js post.js \
+		$(EMCC_COMMON_ARGS_DEBUG)
+
+ffmpeg-worker-g.js: #ffmpeg 
+	emcc build/ffmpeg.bc $(SHARE_DEPS) \
+		--pre-js pre-worker.js \
+		--post-js post-worker.js \
+		$(EMCC_COMMON_ARGS_DEBUG)
+
 

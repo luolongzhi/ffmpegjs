@@ -12,9 +12,11 @@
         console.log("=======================> is ready");
                 break;
       case "stdout":
+        console.log("stdout: ", msg.data);
         stdout += msg.data + "\n";
         break;
       case "stderr":
+        console.log("stderr", msg.data);
         stderr += msg.data + "\n";
         break;
       case "exit":
