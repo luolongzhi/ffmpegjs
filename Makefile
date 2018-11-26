@@ -24,6 +24,7 @@ WORK_PATH := $(shell pwd)
 all: ffmpeg.js
 clean: 
 	rm -rf build
+	rm ffmpeg.js ffmpeg.wasm
 
 #share lib deps 
 LIBASS_DEPS = \
@@ -154,8 +155,10 @@ FFMPEG_COMMON_ARGS = \
 	--enable-swresample \
 	--enable-swscale \
 	--enable-avfilter \
-	--disable-network \
 	--disable-d3d11va \
+	--enable-network \
+	--enable-protocol=rtmp\
+	--enable-protocol=http\
 	--disable-dxva2 \
 	--disable-vaapi \
 	--disable-vdpau \
@@ -178,7 +181,7 @@ MP4_MUXERS = mp4 mp3 adts wav null
 
 FFMPEG_PKG_PATH = ../build/dist/lib/pkgconfig
 
-ffmpeg: #$(SOURCE_REDAY) $(SHARE_DEPS) 
+ffmpeg: $(SOURCE_REDAY) $(SHARE_DEPS) 
 	cd build/ffmpeg-$(FFMPEG_VERSION) && \
 	EM_PKG_CONFIG_PATH=$(FFMPEG_PKG_PATH) emconfigure ./configure \
 		$(FFMPEG_COMMON_ARGS) \
@@ -208,6 +211,7 @@ FFMPEG_BC: build/ffmpeg.bc
 EMCC_COMMON_ARGS = \
 	-s NO_EXIT_RUNTIME=0 \
 	-s TOTAL_MEMORY=67108864 \
+	-s ASSERTIONS=1 \
 	--pre-js pre.js \
 	--post-js post.js \
 	-o $@

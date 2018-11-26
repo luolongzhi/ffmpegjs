@@ -27,22 +27,22 @@ WORK_PATH := $(shell pwd)
 
 all: ffmpeg
 clean: 
-	rm -rf build
+	rm -rf buildpc
 
 #share lib deps 
 LIBASS_DEPS = \
-	build/dist/lib/libfribidi.so \
-	build/dist/lib/libfreetype.so
+	buildpc/dist/lib/libfribidi.so \
+	buildpc/dist/lib/libfreetype.so
 WEBM_SHARED_DEPS = \
 	$(LIBASS_DEPS) \
-	build/dist/lib/libass.so \
-	build/dist/lib/libopus.so \
-	build/dist/lib/libvpx.so
+	buildpc/dist/lib/libass.so \
+	buildpc/dist/lib/libopus.so \
+	buildpc/dist/lib/libvpx.so
 
 MP4_SHARED_DEPS = \
-	build/dist/lib/libmp3lame.so \
-	build/dist/lib/libfdk-aac.so \
-	build/dist/lib/libx264.so
+	buildpc/dist/lib/libmp3lame.so \
+	buildpc/dist/lib/libfdk-aac.so \
+	buildpc/dist/lib/libx264.so
 
 SHARE_DEPS = \
 	$(MP4_SHARED_DEPS) \
@@ -51,19 +51,19 @@ SHARE_DEPS = \
 #ready action
 SOURCE_REDAY = cp_source_code tar_source_code 
 cp_source_code:
-	mkdir build && \
-	cp src/$(SRC_FFMPEG) build && \
-	cp src/$(SRC_FREETYPE) build && \
-	cp src/$(SRC_FRIBIDI) build && \
-	cp src/$(SRC_LAME) build && \
-	cp src/$(SRC_FDKAAC) build && \
-	cp src/$(SRC_X264) build && \
-	cp src/$(SRC_LIBASS) build && \
-	cp src/$(SRC_LIBVPX) build && \
-	cp src/$(SRC_OPUS) build
+	mkdir buildpc && \
+	cp src/$(SRC_FFMPEG) buildpc && \
+	cp src/$(SRC_FREETYPE) buildpc && \
+	cp src/$(SRC_FRIBIDI) buildpc && \
+	cp src/$(SRC_LAME) buildpc && \
+	cp src/$(SRC_FDKAAC) buildpc && \
+	cp src/$(SRC_X264) buildpc && \
+	cp src/$(SRC_LIBASS) buildpc && \
+	cp src/$(SRC_LIBVPX) buildpc && \
+	cp src/$(SRC_OPUS) buildpc
 
 tar_source_code:
-	cd build && \
+	cd buildpc && \
 	tar xvf $(SRC_FFMPEG) && rm $(SRC_FFMPEG) && \
 	tar xvf $(SRC_FREETYPE) && rm $(SRC_FREETYPE) && \
 	tar xvf $(SRC_FRIBIDI) && rm $(SRC_FRIBIDI) && \
@@ -75,10 +75,10 @@ tar_source_code:
 	tar xvf $(SRC_OPUS) && rm $(SRC_OPUS) 
 
 #share library compile
-build/dist/lib/libmp3lame.so:
-	cd build/lame-$(LAME_VERSION) && \
+buildpc/dist/lib/libmp3lame.so:
+	cd buildpc/lame-$(LAME_VERSION) && \
 	./configure \
-		--prefix="$(WORK_PATH)/build/dist" \
+		--prefix="$(WORK_PATH)/buildpc/dist" \
 		--disable-static \
 		--disable-gtktest \
 		--disable-analyzer-hooks \
@@ -88,20 +88,20 @@ build/dist/lib/libmp3lame.so:
 	make && \
 	make install
 
-build/dist/lib/libfdk-aac.so:
-	cd build/fdk-aac-$(FDKAAC_VERSION) && \
+buildpc/dist/lib/libfdk-aac.so:
+	cd buildpc/fdk-aac-$(FDKAAC_VERSION) && \
 	./configure \
-		--prefix="$(WORK_PATH)/build/dist" \
+		--prefix="$(WORK_PATH)/buildpc/dist" \
 		--disable-static \
 		&& \
 	make && \
 	make install
 
 
-build/dist/lib/libx264.so:
-	cd build/x264-$(X264_VERSION) && \
+buildpc/dist/lib/libx264.so:
+	cd buildpc/x264-$(X264_VERSION) && \
 	./configure \
-		--prefix="$(WORK_PATH)/build/dist" \
+		--prefix="$(WORK_PATH)/buildpc/dist" \
 		--disable-cli \
 		--enable-shared \
 		--disable-opencl \
@@ -151,7 +151,9 @@ FFMPEG_COMMON_ARGS = \
 	--enable-swresample \
 	--enable-swscale \
 	--enable-avfilter \
-	--disable-network \
+	--enable-network \
+	--enable-protocol=rtmp\
+	--enable-protocol=http\
 	--disable-d3d11va \
 	--disable-dxva2 \
 	--disable-vaapi \
@@ -173,7 +175,7 @@ MP4_ENCODERS = libx264 libmp3lame aac libfdk_aac pcm_s16le pcm_s16be
 MP4_MUXERS = mp4 mp3 adts wav null
 
 ffmpeg: $(SOURCE_REDAY) $(SHARE_DEPS) 
-	cd build/ffmpeg-$(FFMPEG_VERSION) && \
+	cd buildpc/ffmpeg-$(FFMPEG_VERSION) && \
 	./configure \
 		$(FFMPEG_COMMON_ARGS) \
 		$(addprefix --enable-encoder=,$(MP4_ENCODERS)) \
