@@ -25,6 +25,8 @@ all: ffmpeg.js ffmpeg-worker.js
 clean: 
 	rm -rf build
 	rm ffmpeg.js ffmpeg-worker.js ffmpeg.wasm
+cleanpc:
+	rm -rf buildpc
 
 #share lib deps 
 LIBASS_DEPS = \
@@ -207,8 +209,8 @@ FFMPEG_BC: build/ffmpeg.bc
 	#-o $@
 
 EMCC_COMMON_ARGS = \
-	-s TOTAL_MEMORY=67108864 \
-	-s ASSERTIONS=1 \
+	-s TOTAL_MEMORY=134217728\
+	-O2 \
 	-o $@
 
 ffmpeg.js: ffmpeg 
