@@ -1,16 +1,6 @@
 var ffmpeg = require("./ffmpeg.js");
 var fs = require("fs");
 
-//var testData = new Uint8Array(fs.readFileSync("pm.wav"));
-//var result = ffmpeg({
-  //MEMFS: [{name: "pm.wav", data: testData}],
-  //arguments: ["-i", "pm.wav", "-f", "mp3", "pm.mp3"],
-  //stdin: function() {},
-//});
-//var out = result.MEMFS[0];
-//fs.writeFileSync(out.name, Buffer(out.data));
-
-
 ffmpeg({
   // Mount /data inside application to the current directory.
   mounts: [{type: "NODEFS", opts: {root: "."}, mountpoint: "/data"}],

@@ -21,10 +21,10 @@ SRC_OPUS = opus-$(OPUS_VERSION).tar.gz
 WORK_PATH := $(shell pwd)
 
 
-all: ffmpeg.js
+all: ffmpeg.js ffmpeg-worker.js
 clean: 
 	rm -rf build
-	rm ffmpeg.js ffmpeg.wasm
+	rm ffmpeg.js ffmpeg-worker.js ffmpeg.wasm
 
 #share lib deps 
 LIBASS_DEPS = \
@@ -156,9 +156,7 @@ FFMPEG_COMMON_ARGS = \
 	--enable-swscale \
 	--enable-avfilter \
 	--disable-d3d11va \
-	--enable-network \
-	--enable-protocol=rtmp\
-	--enable-protocol=http\
+	--disable-network \
 	--disable-dxva2 \
 	--disable-vaapi \
 	--disable-vdpau \
@@ -211,11 +209,17 @@ FFMPEG_BC: build/ffmpeg.bc
 EMCC_COMMON_ARGS = \
 	-s TOTAL_MEMORY=67108864 \
 	-s ASSERTIONS=1 \
-	--pre-js pre.js \
-	--post-js post.js \
 	-o $@
 
-ffmpeg.js: #ffmpeg 
+ffmpeg.js: ffmpeg 
 	emcc build/ffmpeg.bc $(SHARE_DEPS) \
+		--pre-js pre.js \
+		--post-js post.js \
+		$(EMCC_COMMON_ARGS)
+
+ffmpeg-worker.js: ffmpeg 
+	emcc build/ffmpeg.bc $(SHARE_DEPS) \
+		--pre-js pre-worker.js \
+		--post-js post-worker.js \
 		$(EMCC_COMMON_ARGS)
 
