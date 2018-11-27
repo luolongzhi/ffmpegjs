@@ -1,23 +1,20 @@
-# Compile FFmpeg and all its dependencies to JavaScript.
-# You need emsdk environment installed and activated, see:
-# <https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html>.
-
 FFMPEG_VERSION = 4.1
-FREETYPE_VERSION = 2.9.1
-FRIBIDI_VERSION = 1.0.5
+SRC_FFMPEG = ffmpeg-$(FFMPEG_VERSION).tar.bz2
+#mp4
 LAME_VERSION = 3.99.5
 FDKAAC_VERSION = 2.0.0
 X264_VERSION = 20180925
-LIBASS_VERSION = 0.14.0
-LIBVPX_VERSION = 1.7.0
-OPUS_VERSION = 1.3
-                      
-SRC_FFMPEG = ffmpeg-$(FFMPEG_VERSION).tar.bz2
-SRC_FREETYPE = freetype-$(FREETYPE_VERSION).tar.gz
-SRC_FRIBIDI =fribidi-$(FRIBIDI_VERSION).tar.gz
 SRC_LAME = lame-$(LAME_VERSION).tar.gz
 SRC_FDKAAC = fdk-aac-$(FDKAAC_VERSION).tar.gz
 SRC_X264 = x264-$(X264_VERSION).tar.gz
+#webm
+FREETYPE_VERSION = 2.9.1
+FRIBIDI_VERSION = 1.0.5
+LIBASS_VERSION = 0.14.0
+LIBVPX_VERSION = 1.7.0
+OPUS_VERSION = 1.3
+SRC_FREETYPE = freetype-$(FREETYPE_VERSION).tar.gz
+SRC_FRIBIDI =fribidi-$(FRIBIDI_VERSION).tar.gz
 SRC_LIBASS = libass-$(LIBASS_VERSION).tar.gz
 SRC_LIBVPX = libvpx-$(LIBVPX_VERSION).tar.gz
 SRC_OPUS = opus-$(OPUS_VERSION).tar.gz
@@ -46,35 +43,41 @@ MP4_SHARED_DEPS = \
 
 SHARE_DEPS = \
 	$(MP4_SHARED_DEPS) \
-	#$(WEBM_SHARED_DEPS) \
+	$(WEBM_SHARED_DEPS) \
 
 #ready action
 SOURCE_REDAY = cp_source_code tar_source_code 
 cp_source_code:
 	mkdir buildpc && \
 	cp src/$(SRC_FFMPEG) buildpc && \
-	cp src/$(SRC_FREETYPE) buildpc && \
-	cp src/$(SRC_FRIBIDI) buildpc && \
+	\
 	cp src/$(SRC_LAME) buildpc && \
 	cp src/$(SRC_FDKAAC) buildpc && \
 	cp src/$(SRC_X264) buildpc && \
+	\
+	cp src/$(SRC_FREETYPE) buildpc && \
+	cp src/$(SRC_FRIBIDI) buildpc && \
 	cp src/$(SRC_LIBASS) buildpc && \
 	cp src/$(SRC_LIBVPX) buildpc && \
 	cp src/$(SRC_OPUS) buildpc
 
 tar_source_code:
 	cd buildpc && \
+	tar xvf $(SRC_FFMPEG) && mv ffmpeg-$(FFMPEG_VERSION) ffmpeg-mp4-$(FFMPEG_VERSION)&& \
+	tar xvf $(SRC_FFMPEG) && mv ffmpeg-$(FFMPEG_VERSION) ffmpeg-webm-$(FFMPEG_VERSION)&& \
 	tar xvf $(SRC_FFMPEG) && rm $(SRC_FFMPEG) && \
-	tar xvf $(SRC_FREETYPE) && rm $(SRC_FREETYPE) && \
-	tar xvf $(SRC_FRIBIDI) && rm $(SRC_FRIBIDI) && \
+	\
 	tar xvf $(SRC_LAME) && rm $(SRC_LAME) && \
 	tar xvf $(SRC_FDKAAC) && rm $(SRC_FDKAAC) && \
 	tar xvf $(SRC_X264) && rm $(SRC_X264) && \
+	\
+	tar xvf $(SRC_FREETYPE) && rm $(SRC_FREETYPE) && \
+	tar xvf $(SRC_FRIBIDI) && rm $(SRC_FRIBIDI) && \
 	tar xvf $(SRC_LIBASS) && rm $(SRC_LIBASS) && \
 	tar xvf $(SRC_LIBVPX) && rm $(SRC_LIBVPX) && \
 	tar xvf $(SRC_OPUS) && rm $(SRC_OPUS) 
 
-#share library compile
+#mp4 share library compile
 buildpc/dist/lib/libmp3lame.so:
 	cd buildpc/lame-$(LAME_VERSION) && \
 	./configure \
@@ -117,6 +120,88 @@ buildpc/dist/lib/libx264.so:
 		&& \
 	make && \
 	make install
+
+
+#webm share lib 
+buildpc/dist/lib/libfreetype.so: 
+	cd buildpc/freetype-$(FREETYPE_VERSION) && ./autogen.sh \
+	./configure \
+		CFLAGS=-O3 \
+		--prefix="$(WORK_PATH)/buildpc/dist" \
+		--disable-static \
+		\
+		--without-zlib \
+		--without-bzip2 \
+		--without-png \
+		--without-harfbuzz \
+		&& \
+	make && \
+	make install
+
+buildpc/dist/lib/libfribidi.so: 
+	cd buildpc/fribidi-$(FRIBIDI_VERSION) && ./autogen.sh \
+	./configure \
+		CFLAGS=-O3 \
+		--prefix="$(WORK_PATH)/buildpc/dist" \
+		--disable-dependency-tracking \
+		--disable-debug \
+		--without-glib \
+		&& \
+	make && \
+	make install
+
+buildpc/dist/lib/libass.so: $(LIBASS_DEPS)
+	cd buildpc/libass-$(LIBASS_VERSION) && ./autogen.sh \
+	./configure \
+		CFLAGS=-O3 \
+		--prefix="$(WORK_PATH)/buildpc/dist" \
+		--disable-static \
+		--disable-enca \
+		--disable-fontconfig \
+		--disable-require-system-font-provider \
+		--disable-harfbuzz \
+		--disable-asm \
+		&& \
+	make && \
+	make install
+
+buildpc/dist/lib/libopus.so: 
+	cd buildpc/opus-$(OPUS_VERSION) && ./autogen.sh \
+	./configure \
+		CFLAGS=-O3 \
+		--prefix="$(WORK_PATH)/buildpc/dist" \
+		--disable-static \
+		--disable-doc \
+		--disable-extra-programs \
+		--disable-asm \
+		--disable-rtcd \
+		--disable-intrinsics \
+		&& \
+	make && \
+	make install
+
+buildpc/dist/lib/libvpx.so:
+	cd buildpc/libvpx-$(LIBVPX_VERSION) && \
+	./configure \
+		--prefix="$(WORK_PATH)/buildpc/dist" \
+		--target=generic-gnu \
+		--disable-dependency-tracking \
+		--disable-multithread \
+		--disable-runtime-cpu-detect \
+		--enable-shared \
+		--disable-static \
+		\
+		--disable-examples \
+		--disable-docs \
+		--disable-unit-tests \
+		--disable-webm-io \
+		--disable-libyuv \
+		--disable-vp8-decoder \
+		--disable-vp9 \
+		&& \
+	make && \
+	make install
+
 
 #common ffmpeg filter and demuxer and decoder
 COMMON_FILTERS = aresample scale crop overlay
@@ -173,22 +258,66 @@ FFMPEG_COMMON_ARGS = \
 
 MP4_ENCODERS = libx264 libmp3lame aac libfdk_aac pcm_s16le pcm_s16be
 MP4_MUXERS = mp4 mp3 adts wav null
+MP4_ARGS = \
+	--enable-gpl \
+	--enable-libmp3lame \
+	--enable-libfdk-aac \
+	--enable-libx264 
+
+WEBM_ENCODERS = libvpx_vp8 libopus mjpeg
+WEBM_MUXERS = webm ogg null image2
+WEBM_ARGS = \
+	--enable-filter=subtitles \
+	--enable-libass \
+	--enable-libopus \
+	--enable-libvpx 
+
+ALL_ENCODERS = $(MP4_ENCODERS) \
+			   $(WEBM_ENCODERS)
+ALL_MUXERS = $(MP4_MUXERS) \
+			 $(WEBM_MUXERS)
 
 ffmpeg: $(SOURCE_REDAY) $(SHARE_DEPS) 
 	cd buildpc/ffmpeg-$(FFMPEG_VERSION) && \
 	./configure \
 		$(FFMPEG_COMMON_ARGS) \
-		$(addprefix --enable-encoder=,$(MP4_ENCODERS)) \
-		$(addprefix --enable-muxer=,$(MP4_MUXERS)) \
-		--enable-gpl \
+		$(addprefix --enable-encoder=,$(ALL_ENCODERS)) \
+		$(addprefix --enable-muxer=,$(ALL_MUXERS)) \
+		$(MP4_ARGS) \
+		$(WEBM_ARGS) \
 		--enable-nonfree \
-		--enable-libmp3lame \
-		--enable-libfdk-aac\
-		--enable-libx264 \
 		--extra-cflags="-I../dist/include" \
 		--extra-ldflags="-L../dist/lib" \
 		&& \
 	make && \
 	cp ffmpeg ../
+
+ffmpeg-mp4: $(SOURCE_REDAY) $(SHARE_DEPS) 
+	cd buildpc/ffmpeg-mp4-$(FFMPEG_VERSION) && \
+	./configure \
+		$(FFMPEG_COMMON_ARGS) \
+		$(addprefix --enable-encoder=,$(MP4_ENCODERS)) \
+		$(addprefix --enable-muxer=,$(MP4_MUXERS)) \
+		$(MP4_ARGS) \
+		--enable-nonfree \
+		--extra-cflags="-I../dist/include" \
+		--extra-ldflags="-L../dist/lib" \
+		&& \
+	make && \
+	cp ffmpeg ../ffmpeg-mp4
+
+ffmpeg-webm: $(SOURCE_REDAY) $(SHARE_DEPS) 
+	cd buildpc/ffmpeg-webm-$(FFMPEG_VERSION) && \
+	./configure \
+		$(FFMPEG_COMMON_ARGS) \
+		$(addprefix --enable-encoder=,$(WEBM_ENCODERS)) \
+		$(addprefix --enable-muxer=,$(WEBM_MUXERS)) \
+		$(WEBM_ARGS) \
+		--enable-nonfree \
+		--extra-cflags="-I../dist/include" \
+		--extra-ldflags="-L../dist/lib" \
+		&& \
+	make && \
+	cp ffmpeg ../ffmpeg-webm
 
 
