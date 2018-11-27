@@ -1,19 +1,20 @@
 FFMPEG_VERSION = 4.1
-FREETYPE_VERSION = 2.9.1
-FRIBIDI_VERSION = 1.0.5
+SRC_FFMPEG = ffmpeg-$(FFMPEG_VERSION).tar.bz2
+#mp4
 LAME_VERSION = 3.99.5
 FDKAAC_VERSION = 2.0.0
 X264_VERSION = 20180925
-LIBASS_VERSION = 0.14.0
-LIBVPX_VERSION = 1.7.0
-OPUS_VERSION = 1.3
-                      
-SRC_FFMPEG = ffmpeg-$(FFMPEG_VERSION).tar.bz2
-SRC_FREETYPE = freetype-$(FREETYPE_VERSION).tar.gz
-SRC_FRIBIDI =fribidi-$(FRIBIDI_VERSION).tar.gz
 SRC_LAME = lame-$(LAME_VERSION).tar.gz
 SRC_FDKAAC = fdk-aac-$(FDKAAC_VERSION).tar.gz
 SRC_X264 = x264-$(X264_VERSION).tar.gz
+#webm
+FREETYPE_VERSION = 2.9.1
+FRIBIDI_VERSION = 1.0.5
+LIBASS_VERSION = 0.14.0
+LIBVPX_VERSION = 1.7.0
+OPUS_VERSION = 1.3
+SRC_FREETYPE = freetype-$(FREETYPE_VERSION).tar.gz
+SRC_FRIBIDI =fribidi-$(FRIBIDI_VERSION).tar.gz
 SRC_LIBASS = libass-$(LIBASS_VERSION).tar.gz
 SRC_LIBVPX = libvpx-$(LIBVPX_VERSION).tar.gz
 SRC_OPUS = opus-$(OPUS_VERSION).tar.gz
@@ -43,7 +44,7 @@ MP4_SHARED_DEPS = \
 	build/dist/lib/libfdk-aac.so \
 	build/dist/lib/libx264.so
 
-SHARE_DEPS = \
+SHARED_DEPS = \
 	$(MP4_SHARED_DEPS) \
 	#$(WEBM_SHARED_DEPS) \
 
@@ -52,11 +53,13 @@ SOURCE_REDAY = cp_source_code tar_source_code
 cp_source_code:
 	mkdir build && \
 	cp src/$(SRC_FFMPEG) build && \
-	cp src/$(SRC_FREETYPE) build && \
-	cp src/$(SRC_FRIBIDI) build && \
+	\
 	cp src/$(SRC_LAME) build && \
 	cp src/$(SRC_FDKAAC) build && \
 	cp src/$(SRC_X264) build && \
+	\
+	cp src/$(SRC_FREETYPE) build && \
+	cp src/$(SRC_FRIBIDI) build && \
 	cp src/$(SRC_LIBASS) build && \
 	cp src/$(SRC_LIBVPX) build && \
 	cp src/$(SRC_OPUS) build
@@ -64,17 +67,19 @@ cp_source_code:
 tar_source_code:
 	cd build && \
 	tar xvf $(SRC_FFMPEG) && rm $(SRC_FFMPEG) && \
-	tar xvf $(SRC_FREETYPE) && rm $(SRC_FREETYPE) && \
-	tar xvf $(SRC_FRIBIDI) && rm $(SRC_FRIBIDI) && \
+	\
 	tar xvf $(SRC_LAME) && rm $(SRC_LAME) && \
 	tar xvf $(SRC_FDKAAC) && rm $(SRC_FDKAAC) && \
 	tar xvf $(SRC_X264) && rm $(SRC_X264) && \
+	\
+	tar xvf $(SRC_FREETYPE) && rm $(SRC_FREETYPE) && \
+	tar xvf $(SRC_FRIBIDI) && rm $(SRC_FRIBIDI) && \
 	tar xvf $(SRC_LIBASS) && rm $(SRC_LIBASS) && \
 	tar xvf $(SRC_LIBVPX) && rm $(SRC_LIBVPX) && \
 	tar xvf $(SRC_OPUS) && rm $(SRC_OPUS) 
 
 
-#share library compile
+#mp4 share library compile
 build/dist/lib/libmp3lame.so:
 	cd build/lame-$(LAME_VERSION) && \
 	emconfigure ./configure \
@@ -176,22 +181,37 @@ FFMPEG_COMMON_ARGS = \
 	--disable-zlib
 
 MP4_ENCODERS = libx264 libmp3lame aac libfdk_aac pcm_s16le pcm_s16be
-#MP4_ENCODERS = libx264 libmp3lame aac pcm_s16le pcm_s16be
 MP4_MUXERS = mp4 mp3 adts wav null
+MP4_ARGS = \
+	--enable-gpl \
+	--enable-libmp3lame \
+	--enable-libfdk-aac \
+	--enable-libx264 
+
+WEBM_ENCODERS = libvpx_vp8 libopus mjpeg
+WEBM_MUXERS = webm ogg null image2
+WEBM_ARGS = \
+	--enable-filter=subtitles \
+	--enable-libass \
+	--enable-libopus \
+	--enable-libvpx 
+
+ALL_ENCODERS = $(MP4_ENCODERS) \
+			   $(WEBM_ENCODERS)
+ALL_MUXERS = $(MP4_MUXERS) \
+			 $(WEBM_MUXERS)
 
 FFMPEG_PKG_PATH = ../build/dist/lib/pkgconfig
 
-ffmpeg: $(SOURCE_REDAY) $(SHARE_DEPS) 
+ffmpeg: $(SOURCE_REDAY) $(SHARED_DEPS) 
 	cd build/ffmpeg-$(FFMPEG_VERSION) && \
 	EM_PKG_CONFIG_PATH=$(FFMPEG_PKG_PATH) emconfigure ./configure \
 		$(FFMPEG_COMMON_ARGS) \
-		$(addprefix --enable-encoder=,$(MP4_ENCODERS)) \
-		$(addprefix --enable-muxer=,$(MP4_MUXERS)) \
-		--enable-gpl \
+		$(addprefix --enable-encoder=,$(ALL_ENCODERS)) \
+		$(addprefix --enable-muxer=,$(ALL_MUXERS)) \
+		$(MP4_ARGS) \
+		$(WEBM_ARGS) \
 		--enable-nonfree \
-		--enable-libmp3lame \
-		--enable-libfdk-aac \
-		--enable-libx264 \
 		--extra-cflags="-I../dist/include" \
 		--extra-ldflags="-L../dist/lib" \
 		&& \
@@ -218,25 +238,25 @@ EMCC_COMMON_ARGS_DEBUG = \
 	-o $@
 
 ffmpeg.js: #ffmpeg 
-	emcc build/ffmpeg.bc $(SHARE_DEPS) \
+	emcc build/ffmpeg.bc $(SHARED_DEPS) \
 		--pre-js pre.js \
 		--post-js post.js \
 		$(EMCC_COMMON_ARGS)
 
 ffmpeg-worker.js: #ffmpeg 
-	emcc build/ffmpeg.bc $(SHARE_DEPS) \
+	emcc build/ffmpeg.bc $(SHARED_DEPS) \
 		--pre-js pre-worker.js \
 		--post-js post-worker.js \
 		$(EMCC_COMMON_ARGS)
 
 ffmpeg-g.js: #ffmpeg 
-	emcc build/ffmpeg.bc $(SHARE_DEPS) \
+	emcc build/ffmpeg.bc $(SHARED_DEPS) \
 		--pre-js pre.js \
 		--post-js post.js \
 		$(EMCC_COMMON_ARGS_DEBUG)
 
 ffmpeg-worker-g.js: #ffmpeg 
-	emcc build/ffmpeg.bc $(SHARE_DEPS) \
+	emcc build/ffmpeg.bc $(SHARED_DEPS) \
 		--pre-js pre-worker.js \
 		--post-js post-worker.js \
 		$(EMCC_COMMON_ARGS_DEBUG)
