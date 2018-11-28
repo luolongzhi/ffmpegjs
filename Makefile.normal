@@ -19,10 +19,12 @@ SRC_LIBASS = libass-$(LIBASS_VERSION).tar.gz
 SRC_LIBVPX = libvpx-$(LIBVPX_VERSION).tar.gz
 SRC_OPUS = opus-$(OPUS_VERSION).tar.gz
 
+BUILD_PATH = buildpc
 WORK_PATH := $(shell pwd)
+FFMPEG_PKG_PATH = ../dist/lib/pkgconfig
 
 
-all: ffmpeg
+all: ffmpeg ffmpeg-mp4 ffmpeg-webm
 clean: 
 	rm -rf buildpc
 
@@ -46,7 +48,7 @@ SHARE_DEPS = \
 	$(WEBM_SHARED_DEPS) \
 
 #ready action
-SOURCE_REDAY = cp_source_code tar_source_code 
+SOURCE_REDAY = #cp_source_code tar_source_code 
 cp_source_code:
 	mkdir buildpc && \
 	cp src/$(SRC_FFMPEG) buildpc && \
@@ -124,7 +126,7 @@ buildpc/dist/lib/libx264.so:
 
 #webm share lib 
 buildpc/dist/lib/libfreetype.so: 
-	cd buildpc/freetype-$(FREETYPE_VERSION) && ./autogen.sh \
+	cd buildpc/freetype-$(FREETYPE_VERSION) && ./autogen.sh && \
 	./configure \
 		CFLAGS=-O3 \
 		--prefix="$(WORK_PATH)/buildpc/dist" \
@@ -139,7 +141,7 @@ buildpc/dist/lib/libfreetype.so:
 	make install
 
 buildpc/dist/lib/libfribidi.so: 
-	cd buildpc/fribidi-$(FRIBIDI_VERSION) && ./autogen.sh \
+	cd buildpc/fribidi-$(FRIBIDI_VERSION) && ./autogen.sh && \
 	./configure \
 		CFLAGS=-O3 \
 		--prefix="$(WORK_PATH)/buildpc/dist" \
@@ -151,8 +153,8 @@ buildpc/dist/lib/libfribidi.so:
 	make install
 
 buildpc/dist/lib/libass.so: $(LIBASS_DEPS)
-	cd buildpc/libass-$(LIBASS_VERSION) && ./autogen.sh \
-	./configure \
+	cd buildpc/libass-$(LIBASS_VERSION) && \
+	PKG_CONFIG_PATH=$(FFMPEG_PKG_PATH) ./configure \
 		CFLAGS=-O3 \
 		--prefix="$(WORK_PATH)/buildpc/dist" \
 		--disable-static \
@@ -166,7 +168,7 @@ buildpc/dist/lib/libass.so: $(LIBASS_DEPS)
 	make install
 
 buildpc/dist/lib/libopus.so: 
-	cd buildpc/opus-$(OPUS_VERSION) && ./autogen.sh \
+	cd buildpc/opus-$(OPUS_VERSION) && ./autogen.sh && \
 	./configure \
 		CFLAGS=-O3 \
 		--prefix="$(WORK_PATH)/buildpc/dist" \
@@ -277,9 +279,10 @@ ALL_ENCODERS = $(MP4_ENCODERS) \
 ALL_MUXERS = $(MP4_MUXERS) \
 			 $(WEBM_MUXERS)
 
+
 ffmpeg: $(SOURCE_REDAY) $(SHARE_DEPS) 
 	cd buildpc/ffmpeg-$(FFMPEG_VERSION) && \
-	./configure \
+	PKG_CONFIG_PATH=$(FFMPEG_PKG_PATH) ./configure \
 		$(FFMPEG_COMMON_ARGS) \
 		$(addprefix --enable-encoder=,$(ALL_ENCODERS)) \
 		$(addprefix --enable-muxer=,$(ALL_MUXERS)) \
@@ -294,7 +297,7 @@ ffmpeg: $(SOURCE_REDAY) $(SHARE_DEPS)
 
 ffmpeg-mp4: $(SOURCE_REDAY) $(SHARE_DEPS) 
 	cd buildpc/ffmpeg-mp4-$(FFMPEG_VERSION) && \
-	./configure \
+	PKG_CONFIG_PATH=$(FFMPEG_PKG_PATH) ./configure \
 		$(FFMPEG_COMMON_ARGS) \
 		$(addprefix --enable-encoder=,$(MP4_ENCODERS)) \
 		$(addprefix --enable-muxer=,$(MP4_MUXERS)) \
@@ -308,7 +311,7 @@ ffmpeg-mp4: $(SOURCE_REDAY) $(SHARE_DEPS)
 
 ffmpeg-webm: $(SOURCE_REDAY) $(SHARE_DEPS) 
 	cd buildpc/ffmpeg-webm-$(FFMPEG_VERSION) && \
-	./configure \
+	PKG_CONFIG_PATH=$(FFMPEG_PKG_PATH) ./configure \
 		$(FFMPEG_COMMON_ARGS) \
 		$(addprefix --enable-encoder=,$(WEBM_ENCODERS)) \
 		$(addprefix --enable-muxer=,$(WEBM_MUXERS)) \

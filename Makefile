@@ -20,6 +20,7 @@ SRC_LIBVPX = libvpx-$(LIBVPX_VERSION).tar.gz
 SRC_OPUS = opus-$(OPUS_VERSION).tar.gz
 
 WORK_PATH := $(shell pwd)
+FFMPEG_PKG_PATH = ../dist/lib/pkgconfig
 
 
 all: ffmpeg.js ffmpeg-worker.js ffmpeg-g.js ffmpeg-worker-g.js
@@ -201,7 +202,6 @@ ALL_ENCODERS = $(MP4_ENCODERS) \
 ALL_MUXERS = $(MP4_MUXERS) \
 			 $(WEBM_MUXERS)
 
-FFMPEG_PKG_PATH = ../build/dist/lib/pkgconfig
 
 ffmpeg: $(SOURCE_REDAY) $(SHARED_DEPS) 
 	cd build/ffmpeg-$(FFMPEG_VERSION) && \
