@@ -23,7 +23,7 @@ WORK_PATH := $(shell pwd)
 FFMPEG_PKG_PATH = ../dist/lib/pkgconfig
 
 
-all: ffmpeg.js ffmpeg-worker.js ffmpeg-g.js ffmpeg-worker-g.js
+all: ffmpeg.js ffmpeg-mp4.js ffmpeg-webm.js ffmpeg-worker.js ffmpeg-mp4-worker.js ffmpeg-webm-worker.js
 clean: 
 	rm -rf build
 	rm ffmpeg*.js ffmpeg*.wasm
@@ -47,7 +47,7 @@ MP4_SHARED_DEPS = \
 
 SHARED_DEPS = \
 	$(MP4_SHARED_DEPS) \
-	#$(WEBM_SHARED_DEPS) \
+	$(WEBM_SHARED_DEPS) \
 
 #ready action
 SOURCE_REDAY = cp_source_code tar_source_code 
@@ -67,6 +67,8 @@ cp_source_code:
 
 tar_source_code:
 	cd build && \
+	tar xvf $(SRC_FFMPEG) && mv ffmpeg-$(FFMPEG_VERSION) ffmpeg-mp4-$(FFMPEG_VERSION) && \
+	tar xvf $(SRC_FFMPEG) && mv ffmpeg-$(FFMPEG_VERSION) ffmpeg-webm-$(FFMPEG_VERSION)&& \
 	tar xvf $(SRC_FFMPEG) && rm $(SRC_FFMPEG) && \
 	\
 	tar xvf $(SRC_LAME) && rm $(SRC_LAME) && \
@@ -127,6 +129,91 @@ build/dist/lib/libx264.so:
 		&& \
 	emmake make -j8 && \
 	emmake make install
+
+#webm share lib 
+build/dist/lib/libfreetype.so: 
+	cd build/freetype-$(FREETYPE_VERSION) && ./autogen.sh && \
+	emconfigure ./configure \
+		CFLAGS=-O3 \
+		--prefix="$(WORK_PATH)/build/dist" \
+		--host=x86-none-linux \
+		--disable-static \
+		\
+		--without-zlib \
+		--without-bzip2 \
+		--without-png \
+		--without-harfbuzz \
+		&& \
+	emmake make -j8 && \
+	emmake make install
+
+build/dist/lib/libfribidi.so: 
+	cd build/fribidi-$(FRIBIDI_VERSION) && ./autogen.sh && \
+	emconfigure ./configure \
+		CFLAGS=-O3 \
+		NM=llvm-nm \
+		--prefix="$(WORK_PATH)/build/dist" \
+		--host=x86-none-linux \
+		--disable-dependency-tracking \
+		--disable-debug \
+		--without-glib \
+		&& \
+	emmake make -j8 && \
+	emmake make install
+
+build/dist/lib/libass.so: $(LIBASS_DEPS)
+	cd build/libass-$(LIBASS_VERSION) && \
+	EM_PKG_CONFIG_PATH=$(FFMPEG_PKG_PATH) emconfigure ./configure \
+		CFLAGS=-O3 \
+		--prefix="$(WORK_PATH)/build/dist" \
+		--disable-static \
+		--disable-enca \
+		--disable-fontconfig \
+		--disable-require-system-font-provider \
+		--disable-harfbuzz \
+		--disable-asm \
+		&& \
+	emmake make -j8 && \
+	emmake make install
+
+build/dist/lib/libopus.so: 
+	cd build/opus-$(OPUS_VERSION) && ./autogen.sh && \
+	emconfigure ./configure \
+		CFLAGS=-O3 \
+		--prefix="$(WORK_PATH)/build/dist" \
+		--disable-static \
+		--disable-doc \
+		--disable-extra-programs \
+		--disable-asm \
+		--disable-rtcd \
+		--disable-intrinsics \
+		&& \
+	emmake make -j8 && \
+	emmake make install
+
+build/dist/lib/libvpx.so:
+	cd build/libvpx-$(LIBVPX_VERSION) && \
+	emconfigure ./configure \
+		--prefix="$(WORK_PATH)/build/dist" \
+		--target=generic-gnu \
+		--disable-dependency-tracking \
+		--disable-multithread \
+		--disable-runtime-cpu-detect \
+		--enable-shared \
+		--disable-static \
+		\
+		--disable-examples \
+		--disable-docs \
+		--disable-unit-tests \
+		--disable-webm-io \
+		--disable-libyuv \
+		--disable-vp8-decoder \
+		--disable-vp9 \
+		&& \
+	emmake make -j8 && \
+	emmake make install
+
+
 
 #common ffmpeg filter and demuxer and decoder
 COMMON_FILTERS = aresample scale crop overlay
@@ -218,7 +305,39 @@ ffmpeg: $(SOURCE_REDAY) $(SHARED_DEPS)
 	emmake make && \
 	cp ffmpeg ../ffmpeg.bc 
 
+
+ffmpeg-mp4: $(SOURCE_REDAY) $(SHARED_DEPS) 
+	cd build/ffmpeg-$(FFMPEG_VERSION) && \
+	EM_PKG_CONFIG_PATH=$(FFMPEG_PKG_PATH) emconfigure ./configure \
+		$(FFMPEG_COMMON_ARGS) \
+		$(addprefix --enable-encoder=,$(MP4_ENCODERS)) \
+		$(addprefix --enable-muxer=,$(MP4_MUXERS)) \
+		$(MP4_ARGS) \
+		--enable-nonfree \
+		--extra-cflags="-I../dist/include" \
+		--extra-ldflags="-L../dist/lib" \
+		&& \
+	emmake make && \
+	cp ffmpeg-mp4 ../ffmpeg-mp4.bc 
+
+ffmpeg-webm: $(SOURCE_REDAY) $(SHARED_DEPS) 
+	cd build/ffmpeg-$(FFMPEG_VERSION) && \
+	EM_PKG_CONFIG_PATH=$(FFMPEG_PKG_PATH) emconfigure ./configure \
+		$(FFMPEG_COMMON_ARGS) \
+		$(addprefix --enable-encoder=,$(WEBM_ENCODERS)) \
+		$(addprefix --enable-muxer=,$(WEBM_MUXERS)) \
+		$(WEBM_ARGS) \
+		--enable-nonfree \
+		--extra-cflags="-I../dist/include" \
+		--extra-ldflags="-L../dist/lib" \
+		&& \
+	emmake make && \
+	cp ffmpeg-webm ../ffmpeg-webm.bc 
+
+
 FFMPEG_BC: build/ffmpeg.bc
+FFMPEG_MP4_BC: build/ffmpeg-mp4.bc
+FFMPEG_WEBM_BC: build/ffmpeg-webm.bc
 
 #EMCC_COMMON_ARGS = \
 	#--closure 1 \
@@ -228,37 +347,49 @@ FFMPEG_BC: build/ffmpeg.bc
 	#-O3 --memory-init-file 0 \
 	#-o $@
 
+#EMCC_COMMON_ARGS = \
+	#-s TOTAL_MEMORY=134217728\
+	#-O2 \
+	#-o $@
+
 EMCC_COMMON_ARGS = \
 	-s TOTAL_MEMORY=134217728\
-	-O2 \
 	-o $@
 
-EMCC_COMMON_ARGS_DEBUG = \
-	-s TOTAL_MEMORY=134217728\
-	-o $@
-
-ffmpeg.js: #ffmpeg 
+ffmpeg.js: ffmpeg 
 	emcc build/ffmpeg.bc $(SHARED_DEPS) \
 		--pre-js pre.js \
 		--post-js post.js \
 		$(EMCC_COMMON_ARGS)
 
-ffmpeg-worker.js: #ffmpeg 
+ffmpeg-worker.js: ffmpeg 
 	emcc build/ffmpeg.bc $(SHARED_DEPS) \
 		--pre-js pre-worker.js \
 		--post-js post-worker.js \
 		$(EMCC_COMMON_ARGS)
 
-ffmpeg-g.js: #ffmpeg 
-	emcc build/ffmpeg.bc $(SHARED_DEPS) \
+ffmpeg-mp4.js: ffmpeg-mp4
+	emcc build/ffmpeg-mp4.bc $(MP4_SHARED_DEPS) \
 		--pre-js pre.js \
 		--post-js post.js \
-		$(EMCC_COMMON_ARGS_DEBUG)
+		$(EMCC_COMMON_ARGS)
 
-ffmpeg-worker-g.js: #ffmpeg 
-	emcc build/ffmpeg.bc $(SHARED_DEPS) \
+ffmpeg-mp4-worker.js: ffmpeg-mp4
+	emcc build/ffmpeg-mp4.bc $(MP4_SHARED_DEPS) \
 		--pre-js pre-worker.js \
 		--post-js post-worker.js \
-		$(EMCC_COMMON_ARGS_DEBUG)
+		$(EMCC_COMMON_ARGS)
+
+ffmpeg-webm.js: ffmpeg-webm
+	emcc build/ffmpeg-webm.bc $(WEBM_SHARED_DEPS) \
+		--pre-js pre.js \
+		--post-js post.js \
+		$(EMCC_COMMON_ARGS)
+
+ffmpeg-webm-worker.js: ffmpeg-webm
+	emcc build/ffmpeg-webm.bc $(WEBM_SHARED_DEPS) \
+		--pre-js pre-worker.js \
+		--post-js post-worker.js \
+		$(EMCC_COMMON_ARGS)
 
 
