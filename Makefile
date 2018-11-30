@@ -137,6 +137,7 @@ build/dist/lib/libfreetype.so:
 		CFLAGS=-O3 \
 		--prefix="$(WORK_PATH)/build/dist" \
 		--host=x86-none-linux \
+		--build=x86_64 \
 		--disable-static \
 		\
 		--without-zlib \
@@ -307,7 +308,7 @@ ffmpeg: $(SOURCE_REDAY) $(SHARED_DEPS)
 
 
 ffmpeg-mp4: $(SOURCE_REDAY) $(SHARED_DEPS) 
-	cd build/ffmpeg-$(FFMPEG_VERSION) && \
+	cd build/ffmpeg-mp4-$(FFMPEG_VERSION) && \
 	EM_PKG_CONFIG_PATH=$(FFMPEG_PKG_PATH) emconfigure ./configure \
 		$(FFMPEG_COMMON_ARGS) \
 		$(addprefix --enable-encoder=,$(MP4_ENCODERS)) \
@@ -318,10 +319,10 @@ ffmpeg-mp4: $(SOURCE_REDAY) $(SHARED_DEPS)
 		--extra-ldflags="-L../dist/lib" \
 		&& \
 	emmake make && \
-	cp ffmpeg-mp4 ../ffmpeg-mp4.bc 
+	cp ffmpeg ../ffmpeg-mp4.bc 
 
 ffmpeg-webm: $(SOURCE_REDAY) $(SHARED_DEPS) 
-	cd build/ffmpeg-$(FFMPEG_VERSION) && \
+	cd build/ffmpeg-webm-$(FFMPEG_VERSION) && \
 	EM_PKG_CONFIG_PATH=$(FFMPEG_PKG_PATH) emconfigure ./configure \
 		$(FFMPEG_COMMON_ARGS) \
 		$(addprefix --enable-encoder=,$(WEBM_ENCODERS)) \
@@ -332,12 +333,8 @@ ffmpeg-webm: $(SOURCE_REDAY) $(SHARED_DEPS)
 		--extra-ldflags="-L../dist/lib" \
 		&& \
 	emmake make && \
-	cp ffmpeg-webm ../ffmpeg-webm.bc 
+	cp ffmpeg ../ffmpeg-webm.bc 
 
-
-FFMPEG_BC: build/ffmpeg.bc
-FFMPEG_MP4_BC: build/ffmpeg-mp4.bc
-FFMPEG_WEBM_BC: build/ffmpeg-webm.bc
 
 #EMCC_COMMON_ARGS = \
 	#--closure 1 \
