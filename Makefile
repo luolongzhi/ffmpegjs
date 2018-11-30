@@ -23,7 +23,9 @@ WORK_PATH := $(shell pwd)
 FFMPEG_PKG_PATH = ../dist/lib/pkgconfig
 
 
-all: ffmpeg.js ffmpeg-mp4.js ffmpeg-webm.js ffmpeg-worker.js ffmpeg-mp4-worker.js ffmpeg-webm-worker.js
+all: ffmpeg.js ffmpeg-worker.js mp4js webmjs 
+mp4js: ffmpeg-mp4.js ffmpeg-mp4-worker.js
+webmjs: ffmpeg-webm.js ffmpeg-webm-worker.js
 clean: 
 	rm -rf build
 	rm ffmpeg*.js ffmpeg*.wasm
@@ -50,7 +52,8 @@ SHARED_DEPS = \
 	$(WEBM_SHARED_DEPS) \
 
 #ready action
-SOURCE_REDAY = cp_source_code tar_source_code 
+#SOURCE_REDAY = cp_source_code tar_source_code 
+SOURCE_REDAY = 
 cp_source_code:
 	mkdir build && \
 	cp src/$(SRC_FFMPEG) build && \

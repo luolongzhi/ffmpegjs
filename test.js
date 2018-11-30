@@ -1,4 +1,4 @@
-var ffmpeg = require("./ffmpeg-g.js");
+var ffmpeg = require("./ffmpeg.js");
 var fs = require("fs");
 
 ffmpeg({

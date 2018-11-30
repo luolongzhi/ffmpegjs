@@ -1,10 +1,10 @@
-<script src="./ffmpeg-worker-g.js"></script>
+<script src="./ffmpeg-worker.js"></script>
 <script src="./downFile.js"></script>
 <input type='file' onchange='openFile(event)'>
 <script> 
   var stdout = "";
   var stderr = "";
-  var worker = new Worker("ffmpeg-worker-g.js");
+  var worker = new Worker("ffmpeg-worker.js");
   worker.onmessage = function(e) {
     var msg = e.data;
     switch (msg.type) {
