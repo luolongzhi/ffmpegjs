@@ -23,9 +23,12 @@ WORK_PATH := $(shell pwd)
 FFMPEG_PKG_PATH = ../dist/lib/pkgconfig
 
 
-all: ffmpeg.js ffmpeg-worker.js mp4js webmjs 
+all: alljs mp4js webmjs 
+
+alljs: ffmpeg.js ffmpeg-worker.js
 mp4js: ffmpeg-mp4.js ffmpeg-mp4-worker.js
 webmjs: ffmpeg-webm.js ffmpeg-webm-worker.js
+
 clean: 
 	rm -rf build
 	rm ffmpeg*.js ffmpeg*.wasm
@@ -350,10 +353,11 @@ ffmpeg-webm: $(SOURCE_REDAY) $(SHARED_DEPS)
 #EMCC_COMMON_ARGS = \
 	#-s TOTAL_MEMORY=134217728\
 	#-O2 \
+	#-s WASM=0 \
 	#-o $@
 
 EMCC_COMMON_ARGS = \
-	-s TOTAL_MEMORY=134217728\
+	-s TOTAL_MEMORY=134217728 \
 	-o $@
 
 ffmpeg.js: ffmpeg 
