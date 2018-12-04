@@ -357,28 +357,31 @@ ffmpeg-webm: $(SOURCE_REDAY) $(SHARED_DEPS)
 	#-o $@
 
 EMCC_COMMON_ARGS = \
+	--closure 1 \
 	-s TOTAL_MEMORY=134217728 \
+	-O3 \
+	-s WASM=0 \
 	-o $@
 
-ffmpeg.js: ffmpeg 
+ffmpeg.js: #ffmpeg 
 	emcc build/ffmpeg.bc $(SHARED_DEPS) \
 		--pre-js pre.js \
 		--post-js post.js \
 		$(EMCC_COMMON_ARGS)
 
-ffmpeg-worker.js: ffmpeg 
+ffmpeg-worker.js: #ffmpeg 
 	emcc build/ffmpeg.bc $(SHARED_DEPS) \
 		--pre-js pre-worker.js \
 		--post-js post-worker.js \
 		$(EMCC_COMMON_ARGS)
 
-ffmpeg-mp4.js: ffmpeg-mp4
+ffmpeg-mp4.js: #ffmpeg-mp4
 	emcc build/ffmpeg-mp4.bc $(MP4_SHARED_DEPS) \
 		--pre-js pre.js \
 		--post-js post.js \
 		$(EMCC_COMMON_ARGS)
 
-ffmpeg-mp4-worker.js: ffmpeg-mp4
+ffmpeg-mp4-worker.js: #ffmpeg-mp4
 	emcc build/ffmpeg-mp4.bc $(MP4_SHARED_DEPS) \
 		--pre-js pre-worker.js \
 		--post-js post-worker.js \
