@@ -1,5 +1,6 @@
 #ffmpeg src
-FFMPEG_VERSION = 4.1
+#FFMPEG_VERSION = 4.1
+FFMPEG_VERSION = 3.2.12
 SRC_FFMPEG = ffmpeg-$(FFMPEG_VERSION).tar.bz2
 
 BUILDPATH=build_android
@@ -30,7 +31,10 @@ NDK_ROOTPATH=/Users/luolongzhi/Software/android-ndk-for-mac
 #arm arm64 mips mips64 x86 x86_64
 NDK = $(NDK_ROOTPATH)/android-ndk-r15c
 SYSROOT = $(NDK)/platforms/android-$(API)/arch-$(ARCH)/
-ADDI_CFLAGS="-marm"
+#SYSROOT = $(NDK)/sysroot
+ADDI_CFLAGS=-marm
+#ADDI_CFLAGS=-marm -isystem $(NDK)/sysroot/usr/include/$(TRIPLE) -D__ANDROID_API__=$(API)
+#ADDI_CFLAGS=-marm -isystem $(NDK)/sysroot/usr/include/$(TRIPLE)
 ADDI_LDFLAGS=
 
 FFMPEG_COMMON_ARGS = \
