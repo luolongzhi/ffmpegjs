@@ -1,0 +1,181 @@
+FFMPEG_VERSION = 4.1
+SRC_FFMPEG = ffmpeg-$(FFMPEG_VERSION).tar.bz2
+#mp4
+LAME_VERSION = 3.99.5
+FDKAAC_VERSION = 2.0.0
+SRC_LAME = lame-$(LAME_VERSION).tar.gz
+SRC_FDKAAC = fdk-aac-$(FDKAAC_VERSION).tar.gz
+
+WORK_PATH := $(shell pwd)
+FFMPEG_PKG_PATH = ../dist/lib/pkgconfig
+
+all: ffmpegaudio.js ffmpegaudio.worker.js
+
+clean: 
+	rm -rf build
+	rm ffmpeg*.js ffmpeg*.wasm
+cleanpc:
+	rm -rf buildpc
+
+#share lib deps 
+MP4_SHARED_DEPS = \
+	build/dist/lib/libmp3lame.so \
+	build/dist/lib/libfdk-aac.so 
+
+SHARED_DEPS = \
+	$(MP4_SHARED_DEPS) 
+
+#ready action
+#SOURCE_REDAY = cp_source_code tar_source_code 
+SOURCE_REDAY = 
+cp_source_code:
+	mkdir build && \
+	cp src/$(SRC_FFMPEG) build && \
+	\
+	cp src/$(SRC_LAME) build && \
+	cp src/$(SRC_FDKAAC) build 
+
+tar_source_code:
+	cd build && \
+	tar xvf $(SRC_FFMPEG) && rm $(SRC_FFMPEG) && \
+	\
+	tar xvf $(SRC_LAME) && rm $(SRC_LAME) && \
+	tar xvf $(SRC_FDKAAC) && rm $(SRC_FDKAAC)
+
+
+#mp4 share library compile
+build/dist/lib/libmp3lame.so:
+	cd build/lame-$(LAME_VERSION) && \
+	emconfigure ./configure \
+		--prefix="$(WORK_PATH)/build/dist" \
+		--host=x86-none-linux \
+		--disable-static \
+		--disable-gtktest \
+		--disable-analyzer-hooks \
+		--disable-decoder \
+		--disable-frontend \
+		&& \
+	emmake make -j8 && \
+	emmake make install
+
+build/dist/lib/libfdk-aac.so:
+	cd build/fdk-aac-$(FDKAAC_VERSION) && \
+	emconfigure ./configure \
+		--prefix="$(WORK_PATH)/build/dist" \
+		--host=x86-none-linux \
+		--disable-static \
+		&& \
+	emmake make -j8 && \
+	emmake make install
+
+#common ffmpeg filter and demuxer and decoder
+COMMON_FILTERS = aresample scale crop overlay
+COMMON_DEMUXERS = matroska ogg avi mov flv mpegps image2 mp3 aac adts ac3 wav concat
+COMMON_DECODERS = \
+	vp8 vp9 theora \
+	mpeg2video mpeg4 h264 hevc \
+	png mjpeg \
+	vorbis opus \
+	mp3 ac3 aac \
+	pcm_s16le pcm_s16be\
+	ass ssa srt webvtt
+
+FFMPEG_COMMON_ARGS = \
+	--cc=emcc \
+	--enable-cross-compile \
+	--target-os=none \
+	--target-os=none \
+	--arch=x86 \
+	--disable-runtime-cpudetect \
+	--disable-asm \
+	--disable-fast-unaligned \
+	--disable-pthreads \
+	--disable-w32threads \
+	--disable-os2threads \
+	--disable-debug \
+	--disable-stripping \
+	\
+	--disable-all \
+	--enable-ffmpeg \
+	--enable-avcodec \
+	--enable-avformat \
+	--enable-avutil \
+	--enable-swresample \
+	--enable-swscale \
+	--enable-avfilter \
+	--disable-d3d11va \
+	--disable-network \
+	--disable-dxva2 \
+	--disable-vaapi \
+	--disable-vdpau \
+	$(addprefix --enable-decoder=,$(COMMON_DECODERS)) \
+	$(addprefix --enable-demuxer=,$(COMMON_DEMUXERS)) \
+	--enable-protocol=file \
+	$(addprefix --enable-filter=,$(COMMON_FILTERS)) \
+	--disable-bzlib \
+	--disable-iconv \
+	--disable-libxcb \
+	--disable-lzma \
+	--disable-sdl2 \
+	--disable-securetransport \
+	--disable-xlib \
+	--disable-zlib
+
+MP4_ENCODERS = libmp3lame aac libfdk_aac pcm_s16le pcm_s16be
+MP4_MUXERS = mp4 mp3 adts wav null
+MP4_ARGS = \
+	--enable-gpl \
+	--enable-libmp3lame \
+	--enable-libfdk-aac
+
+ALL_ENCODERS = $(MP4_ENCODERS) 
+ALL_MUXERS = $(MP4_MUXERS) \
+
+ffmpeg: $(SOURCE_REDAY) $(SHARED_DEPS) 
+	cd build/ffmpeg-$(FFMPEG_VERSION) && \
+	EM_PKG_CONFIG_PATH=$(FFMPEG_PKG_PATH) emconfigure ./configure \
+		$(FFMPEG_COMMON_ARGS) \
+		$(addprefix --enable-encoder=,$(ALL_ENCODERS)) \
+		$(addprefix --enable-muxer=,$(ALL_MUXERS)) \
+		$(MP4_ARGS) \
+		--enable-nonfree \
+		--extra-cflags="-I../dist/include" \
+		--extra-ldflags="-L../dist/lib" \
+		&& \
+	emmake make && \
+	cp ffmpeg ../ffmpeg.bc 
+
+
+#EMCC_COMMON_ARGS = \
+	#--closure 1 \
+	#-s TOTAL_MEMORY=67108864 \
+	#-s OUTLINING_LIMIT=20000 \
+	#-s NO_EXIT_RUNTIME=0 \
+	#-O3 --memory-init-file 0 \
+	#-o $@
+
+#EMCC_COMMON_ARGS = \
+	#-s TOTAL_MEMORY=134217728\
+	#-O2 \
+	#-s WASM=0 \
+	#-o $@
+
+EMCC_COMMON_ARGS = \
+	--closure 1 \
+	-s TOTAL_MEMORY=134217728 \
+	-O3 \
+	-s WASM=0 \
+	-o $@
+
+ffmpeg.js: #ffmpeg 
+	emcc build/ffmpeg.bc $(SHARED_DEPS) \
+		--pre-js pre.js \
+		--post-js post.js \
+		$(EMCC_COMMON_ARGS)
+
+ffmpeg-worker.js: #ffmpeg 
+	emcc build/ffmpeg.bc $(SHARED_DEPS) \
+		--pre-js pre-worker.js \
+		--post-js post-worker.js \
+		$(EMCC_COMMON_ARGS)
+
