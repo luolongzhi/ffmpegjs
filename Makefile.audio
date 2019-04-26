@@ -31,8 +31,8 @@ SHARED_DEPS = \
 	$(MP4_SHARED_DEPS) 
 
 #ready action
-SOURCE_REDAY = cp_source_code tar_source_code 
-#SOURCE_REDAY = 
+#SOURCE_REDAY = cp_source_code tar_source_code 
+SOURCE_REDAY = 
 cp_source_code:
 	mkdir build && \
 	cp src/$(SRC_FFMPEG) build && \
@@ -116,7 +116,7 @@ build/dist/lib/libvorbis.so: build/dist/lib/libogg.so
 	#ass ssa srt webvtt
 
 COMMON_FILTERS = aresample 
-COMMON_DEMUXERS = matroska ogg avi mov flv mpegps image2 mp3 aac adts ac3 asf wav concat
+COMMON_DEMUXERS = matroska ogg avi mov flv mpegps image2 mp3 aac ac3 asf wav concat
 COMMON_DECODERS = \
 	mp3 ac3 aac \
 	wmapro wmav1 wmav2 \
@@ -165,7 +165,7 @@ FFMPEG_COMMON_ARGS = \
 	--disable-xlib \
 	--disable-zlib
 
-MP4_ENCODERS = libmp3lame libfdk_aac libvorbis wmapro wmav1 wmav2 ac3 pcm_s16le pcm_s16be
+MP4_ENCODERS = libmp3lame libfdk_aac libvorbis vorbisenc wmav1 wmav2 ac3 pcm_s16le pcm_s16be
 MP4_MUXERS = mp4 mp3 adts wav ac3 asf ogg null
 MP4_ARGS = \
 	--enable-gpl \
