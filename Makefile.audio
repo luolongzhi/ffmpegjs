@@ -81,9 +81,11 @@ build/dist/lib/libfdk-aac.so:
 	#ass ssa srt webvtt
 
 COMMON_FILTERS = aresample 
-COMMON_DEMUXERS = avi mov flv mpegps image2 mp3 aac adts wav concat
+COMMON_DEMUXERS = matroska ogg avi mov flv mpegps image2 mp3 aac adts wav concat
 COMMON_DECODERS = \
 	mp3 aac \
+	wmapro wmav1 wmav2 \
+	flac vorbis \
 	pcm_s16le pcm_s16be
 
 
@@ -128,8 +130,8 @@ FFMPEG_COMMON_ARGS = \
 	--disable-xlib \
 	--disable-zlib
 
-MP4_ENCODERS = libmp3lame aac libfdk_aac pcm_s16le pcm_s16be
-MP4_MUXERS = mp4 mp3 adts wav null
+MP4_ENCODERS = libmp3lame aac libfdk_aac wmapro wmav1 wmav2 vorbis pcm_s16le pcm_s16be
+MP4_MUXERS = mp4 mp3 adts wav ogg null
 MP4_ARGS = \
 	--enable-gpl \
 	--enable-libmp3lame \
