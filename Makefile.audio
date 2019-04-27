@@ -20,11 +20,11 @@ clean:
 cleanpc:
 	rm -rf buildpc
 
-	#build/dist/lib/libmp3lame.so \
-	#build/dist/lib/libfdk-aac.so \
 
 #share lib deps 
 MP4_SHARED_DEPS = \
+	build/dist/lib/libmp3lame.so \
+	build/dist/lib/libfdk-aac.so \
 	build/dist/lib/libopus.so 
 
 SHARED_DEPS = \
@@ -87,7 +87,10 @@ build/dist/lib/libopus.so:
 		--disable-intrinsics \
 		&& \
 	emmake make -j8 && \
-	emmake make install
+	emmake make install && \
+	rm $(WORK_PATH)/build/dist/lib/libopus.dylib && \
+	mv $(WORK_PATH)/build/dist/lib/libopus.0.dylib $(WORK_PATH)/build/dist/lib/libopus.so.$(OPUS_VERSION) && \
+	ln -s $(WORK_PATH)/build/dist/lib/libopus.so.$(OPUS_VERSION) $(WORK_PATH)/build/dist/lib/libopus.so
 
 
 #build/dist/lib/libogg.so:
