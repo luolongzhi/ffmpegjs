@@ -11,7 +11,8 @@ SRC_OGG = libogg-$(OGG_VERSION).tar.gz
 SRC_VORBIS = libvorbis-$(VORBIS_VERSION).tar.gz
 
 WORK_PATH := $(shell pwd)
-FFMPEG_PKG_PATH = ../dist/lib/pkgconfig
+#FFMPEG_PKG_PATH = ../dist/lib/pkgconfig
+FFMPEG_PKG_PATH = $(WORK_PATH)/build/dist/lib/pkgconfig
 
 all: ffmpegaudio.js ffmpegaudio.worker.js
 
@@ -165,7 +166,7 @@ FFMPEG_COMMON_ARGS = \
 	--disable-xlib \
 	--disable-zlib
 
-MP4_ENCODERS = libmp3lame libfdk_aac libvorbis vorbisenc wmav1 wmav2 ac3 pcm_s16le pcm_s16be
+MP4_ENCODERS = libmp3lame libfdk_aac libvorbis vorbis wmav1 wmav2 ac3 pcm_s16le pcm_s16be
 MP4_MUXERS = mp4 mp3 adts wav ac3 asf ogg null
 MP4_ARGS = \
 	--enable-gpl \
@@ -179,6 +180,7 @@ ALL_MUXERS = $(MP4_MUXERS) \
 ffmpeg: $(SOURCE_REDAY) $(SHARED_DEPS) 
 	cd build/ffmpeg-$(FFMPEG_VERSION) && \
 	EM_PKG_CONFIG_PATH=$(FFMPEG_PKG_PATH) emconfigure ./configure \
+		--prefix="$(WORK_PATH)/build/dist" \
 		$(FFMPEG_COMMON_ARGS) \
 		$(addprefix --enable-encoder=,$(ALL_ENCODERS)) \
 		$(addprefix --enable-muxer=,$(ALL_MUXERS)) \
