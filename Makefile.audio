@@ -3,12 +3,10 @@ SRC_FFMPEG = ffmpeg-$(FFMPEG_VERSION).tar.bz2
 #mp4
 LAME_VERSION = 3.99.5
 FDKAAC_VERSION = 2.0.0
-OGG_VERSION = 1.3.3
-VORBIS_VERSION = 1.3.6
+OPUS_VERSION = 1.3
 SRC_LAME = lame-$(LAME_VERSION).tar.gz
 SRC_FDKAAC = fdk-aac-$(FDKAAC_VERSION).tar.gz
-SRC_OGG = libogg-$(OGG_VERSION).tar.gz
-SRC_VORBIS = libvorbis-$(VORBIS_VERSION).tar.gz
+SRC_OPUS = opus-$(OPUS_VERSION).tar.gz
 
 WORK_PATH := $(shell pwd)
 #FFMPEG_PKG_PATH = ../dist/lib/pkgconfig
@@ -26,22 +24,21 @@ cleanpc:
 MP4_SHARED_DEPS = \
 	build/dist/lib/libmp3lame.so \
 	build/dist/lib/libfdk-aac.so \
-	build/dist/lib/libvorbis.so 
+	build/dist/lib/libopus.so 
 
 SHARED_DEPS = \
 	$(MP4_SHARED_DEPS) 
 
 #ready action
-#SOURCE_REDAY = cp_source_code tar_source_code 
-SOURCE_REDAY = 
+SOURCE_REDAY = cp_source_code tar_source_code 
+#SOURCE_REDAY = 
 cp_source_code:
 	mkdir build && \
 	cp src/$(SRC_FFMPEG) build && \
 	\
 	cp src/$(SRC_LAME) build && \
 	cp src/$(SRC_FDKAAC) build && \
-	cp src/$(SRC_OGG) build && \
-	cp src/$(SRC_VORBIS) build 
+	cp src/$(SRC_OPUS) build 
 
 tar_source_code:
 	cd build && \
@@ -49,8 +46,7 @@ tar_source_code:
 	\
 	tar xvf $(SRC_LAME) && rm $(SRC_LAME) && \
 	tar xvf $(SRC_FDKAAC) && rm $(SRC_FDKAAC) && \
-	tar xvf $(SRC_OGG) && rm $(SRC_OGG) && \
-	tar xvf $(SRC_VORBIS) && rm $(SRC_VORBIS)
+	tar xvf $(SRC_OPUS) && rm $(SRC_OPUS)
 
 
 #mp4 share library compile
@@ -78,30 +74,46 @@ build/dist/lib/libfdk-aac.so:
 	emmake make -j8 && \
 	emmake make install
 
-build/dist/lib/libogg.so:
-	cd build/libogg-$(OGG_VERSION) && \
+build/dist/lib/libopus.so: 
+	cd build/opus-$(OPUS_VERSION) && ./autogen.sh && \
 	emconfigure ./configure \
+		CFLAGS=-O3 \
 		--prefix="$(WORK_PATH)/build/dist" \
-		--host=x86-none-linux \
 		--disable-static \
+		--disable-doc \
+		--disable-extra-programs \
+		--disable-asm \
+		--disable-rtcd \
+		--disable-intrinsics \
 		&& \
 	emmake make -j8 && \
 	emmake make install
 
 
-build/dist/lib/libvorbis.so: build/dist/lib/libogg.so
-	cd build/libvorbis-$(VORBIS_VERSION) && \
-	EM_PKG_CONFIG_PATH=$(FFMPEG_PKG_PATH) emconfigure ./configure \
-		--prefix="$(WORK_PATH)/build/dist" \
-		--host=x86-none-linux \
-		--disable-static \
-		--with-ogg="$(WORK_PATH)/build/dist" \
-		--with-ogg-libraries="$(WORK_PATH)/build/dist/lib" \
-		--with-ogg-includes="$(WORK_PATH)/build/dist/include" \
-		--with-sysroot="$(WORK_PATH)/build/dist" \
-		&& \
-	emmake make -j8 && \
-	emmake make install
+#build/dist/lib/libogg.so:
+	#cd build/libogg-$(OGG_VERSION) && \
+	#emconfigure ./configure \
+		#--prefix="$(WORK_PATH)/build/dist" \
+		#--host=x86-none-linux \
+		#--disable-static \
+		#&& \
+	#emmake make -j8 && \
+	#emmake make install
+
+
+#build/dist/lib/libvorbis.so: build/dist/lib/libogg.so
+	#cd build/libvorbis-$(VORBIS_VERSION) && \
+	#EM_PKG_CONFIG_PATH=$(FFMPEG_PKG_PATH) emconfigure ./configure \
+		#--prefix="$(WORK_PATH)/build/dist" \
+		#--host=x86-none-linux \
+		#--disable-static \
+		#--with-ogg="$(WORK_PATH)/build/dist" \
+		#--with-ogg-libraries="$(WORK_PATH)/build/dist/lib" \
+		#--with-ogg-includes="$(WORK_PATH)/build/dist/include" \
+		#--with-sysroot="$(WORK_PATH)/build/dist" \
+		#&& \
+	#emmake make -j8 && \
+	#emmake make install
 
 
 #common ffmpeg filter and demuxer and decoder
@@ -121,7 +133,7 @@ COMMON_DEMUXERS = matroska ogg avi mov flv mpegps image2 mp3 aac ac3 asf wav con
 COMMON_DECODERS = \
 	mp3 ac3 aac \
 	wmapro wmav1 wmav2 \
-	flac vorbis \
+	flac vorbis opus \
 	pcm_s16le pcm_s16be
 
 
@@ -166,13 +178,13 @@ FFMPEG_COMMON_ARGS = \
 	--disable-xlib \
 	--disable-zlib
 
-MP4_ENCODERS = libmp3lame libfdk_aac libvorbis vorbis wmav1 wmav2 ac3 pcm_s16le pcm_s16be
+MP4_ENCODERS = libmp3lame libfdk_aac libopus vorbis wmav1 wmav2 ac3 pcm_s16le pcm_s16be
 MP4_MUXERS = mp4 mp3 adts wav ac3 asf ogg null
 MP4_ARGS = \
 	--enable-gpl \
 	--enable-libmp3lame \
 	--enable-libfdk-aac \
-	--enable-libvorbis
+	--enable-libopus
 
 ALL_ENCODERS = $(MP4_ENCODERS) 
 ALL_MUXERS = $(MP4_MUXERS) \
@@ -180,7 +192,6 @@ ALL_MUXERS = $(MP4_MUXERS) \
 ffmpeg: $(SOURCE_REDAY) $(SHARED_DEPS) 
 	cd build/ffmpeg-$(FFMPEG_VERSION) && \
 	EM_PKG_CONFIG_PATH=$(FFMPEG_PKG_PATH) emconfigure ./configure \
-		--prefix="$(WORK_PATH)/build/dist" \
 		$(FFMPEG_COMMON_ARGS) \
 		$(addprefix --enable-encoder=,$(ALL_ENCODERS)) \
 		$(addprefix --enable-muxer=,$(ALL_MUXERS)) \
