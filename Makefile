@@ -55,8 +55,8 @@ SHARED_DEPS = \
 	$(WEBM_SHARED_DEPS) \
 
 #ready action
-#SOURCE_REDAY = cp_source_code tar_source_code 
-SOURCE_REDAY = 
+SOURCE_REDAY = cp_source_code tar_source_code 
+#SOURCE_REDAY = 
 cp_source_code:
 	mkdir build && \
 	cp src/$(SRC_FFMPEG) build && \
