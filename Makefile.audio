@@ -16,7 +16,7 @@ all: ffmpegaudio.js ffmpegaudio.worker.js
 
 clean: 
 	rm -rf build
-	rm ffmpegaudio.js ffmpegaudio.wasm
+	rm ffmpegaudio.js ffmpegaudio.worker.js ffmpegaudio.wasm
 cleanpc:
 	rm -rf buildpc
 
@@ -44,7 +44,6 @@ cp_source_code:
 tar_source_code:
 	cd build && \
 	tar xvf $(SRC_FFMPEG) && rm $(SRC_FFMPEG) && \
-	cp ../src/ffmpeg.c ./ffmpeg-4.1/fftools/ffmpeg.c && \
 	\
 	tar xvf $(SRC_LAME) && rm $(SRC_LAME) && \
 	tar xvf $(SRC_FDKAAC) && rm $(SRC_FDKAAC) && \
@@ -225,7 +224,7 @@ ffmpeg: $(SOURCE_REDAY) $(SHARED_DEPS)
 EMCC_COMMON_ARGS = \
 	--closure 1 \
 	-s TOTAL_MEMORY=134217728 \
-	-O3 \
+	-Oz \
 	-s WASM=0 \
 	-o $@
 
