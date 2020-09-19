@@ -1,4 +1,4 @@
-<script src="./ffmpeg.js"></script>
+<script src="./ffmpegaudio.js"></script>
 <script src="./downFile.js"></script>
 <input type='file' onchange='openFile(event)'>
 <script>
@@ -12,8 +12,8 @@
       console.log(arrayBuffer.byteLength);
 
       var result = __ffmpegjs({
-        MEMFS: [{name: "pm.wav", data: arrayBuffer}],
-        arguments: ["-i", "pm.wav", "-f", "mp3", "pm.mp3"],
+        MEMFS: [{name: "bigaudio.mp3", data: arrayBuffer}],
+        arguments: ["-i", "bigaudio.mp3", "-f", "wav", "bigaudio.wav"],
         stdin: function() {},
       });
 

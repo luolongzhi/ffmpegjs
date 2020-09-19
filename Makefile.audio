@@ -227,19 +227,19 @@ ffmpeg: $(SOURCE_REDAY) $(SHARED_DEPS)
 
 EMCC_COMMON_ARGS = \
 	--closure 1 \
-	-s ALLOW_MEMORY_GROWTH=1 \
-	-s TOTAL_MEMORY=1610612736 \
+	-s TOTAL_MEMORY=134217728 \
+	-s MEMFS_APPEND_TO_TYPED_ARRAYS=1 \
 	-O3 \
 	-s WASM=0 \
 	-o $@
 
-ffmpegaudio.js: ffmpeg 
+ffmpegaudio.js: #ffmpeg 
 	emcc build/ffmpeg.bc $(SHARED_DEPS) \
 		--pre-js pre.js \
 		--post-js post.js \
 		$(EMCC_COMMON_ARGS)
 
-ffmpegaudio.worker.js: ffmpeg 
+ffmpegaudio.worker.js: #ffmpeg 
 	emcc build/ffmpeg.bc $(SHARED_DEPS) \
 		--pre-js pre-worker.js \
 		--post-js post-worker.js \

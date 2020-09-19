@@ -3,7 +3,7 @@
 <script> 
   var stdout = "";
   var stderr = "";
-  var worker = new Worker("ffmpeg-mp4-worker.js");
+  var worker = new Worker("ffmpegaudio.worker.js");
   worker.onmessage = function(e) {
     var msg = e.data;
     switch (msg.type) {
@@ -44,7 +44,7 @@
       worker.postMessage({
         type: "run", 
         MEMFS: [{name: "1.mp4", data: arrayBuffer}],
-        arguments: ["-i", "1.mp4", "-f", "mp3", "1.mp3"],
+        arguments: ["-i", "1.mp4", "-f", "wav", "biga.wav"],
       });
 
 
