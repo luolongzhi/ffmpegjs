@@ -16,7 +16,7 @@ all: ffmpegaudio.js ffmpegaudio.worker.js
 
 clean: 
 	rm -rf build
-	rm ffmpegaudio.js ffmpegaudio.worker.js ffmpegaudio.wasm
+	rm ffmpegaudio.js ffmpegaudio.worker.js ffmpegaudio.wasm ffmpegaudio.js.mem ffmpegaudio.worker.js.mem
 cleanpc:
 	rm -rf buildpc
 
