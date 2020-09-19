@@ -227,6 +227,7 @@ ffmpeg: $(SOURCE_REDAY) $(SHARED_DEPS)
 
 EMCC_COMMON_ARGS = \
 	--closure 1 \
+	-s ALLOW_MEMORY_GROWTH=1 \
 	-s TOTAL_MEMORY=1610612736 \
 	-O3 \
 	-s WASM=0 \
