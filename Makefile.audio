@@ -134,10 +134,14 @@ build/dist/lib/libopus.so:
 COMMON_FILTERS = aresample 
 COMMON_DEMUXERS = matroska ogg avi mov flv mpegps image2 mp3 aac ac3 asf ape flac wav concat
 COMMON_DECODERS = \
+	vp8 vp9 theora \
+	mpeg2video mpeg4 h264 hevc \
+	png mjpeg \
 	mp3 ac3 aac \
 	wmapro wmav1 wmav2 \
 	ape flac vorbis opus \
-	pcm_s16le pcm_s16be
+	pcm_s16le pcm_s16be \
+	ass ssa srt webvtt
 
 
 FFMPEG_COMMON_ARGS = \
@@ -223,7 +227,7 @@ ffmpeg: $(SOURCE_REDAY) $(SHARED_DEPS)
 
 EMCC_COMMON_ARGS = \
 	--closure 1 \
-	-s TOTAL_MEMORY=134217728 \
+	-s TOTAL_MEMORY=4026531840 \
 	-Oz \
 	-s WASM=0 \
 	-o $@
