@@ -44,7 +44,7 @@
       worker.postMessage({
         type: "run", 
         MEMFS: [{name: "1.mp4", data: arrayBuffer}],
-        arguments: ["-i", "1.mp4", "-f", "wav", "biga.wav"],
+        arguments: ["-i", "1.mp4", "-c:a", "libmp3lame", "-ab", "128", "-c:v", "copy", "-f", "mp3" ,"aaa.mp3"],
       });
 
 
@@ -54,6 +54,10 @@
   };
 </script>
 
+        <!--arguments: ["-i", "1.m4a", "-c:a", "libmp3lame", "-ab", "128", "-c:v", "copy", "-f", "mp3" ,"aaa.mp3"],-->
+        <!--arguments: ["-i", "1.m4a", "-c:a", "libfdk_aac", "-ab", "128000", "-f", "adts" ,"aaa.aac"],-->
+        <!--arguments: ["-i", "1.m4a", "-c:a", "libfdk_aac", "-ab", "128000", "-c:v", "copy", "-f", "adts" ,"aaa.aac"],-->
+        <!--arguments: ["-i", "1.m4a", "-c:a", "libmp3lame", "-ab", "128000", "-c:v", "copy", "-f", "aac" ,"aaa.mp3"],-->
         <!--arguments: ["-i", "1.mp4", "-vf", "scale=640:480", "-f", "mp4", "111.mp4"],-->
         <!--MEMFS: [{name: "pm.wav", data: arrayBuffer}],-->
         <!--arguments: ["-i", "pm.wav", "-f", "mp3", "pm.mp3"],-->
