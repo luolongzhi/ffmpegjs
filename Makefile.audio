@@ -132,11 +132,12 @@ build/dist/lib/libopus.so:
 	#ass ssa srt webvtt
 
 COMMON_FILTERS = aresample
-COMMON_DEMUXERS = matroska ogg avi mov flv mpegps image2 mp3 mp2 aac ac3 asf ape flac wav concat
+COMMON_DEMUXERS = matroska ogg avi mov flv mpegps image2 mp3 mp2 aac ac3 asf ape aiff amr amrnb amrwb flac wav concat
 COMMON_DECODERS = \
-	mp3 mp2 ac3 aac \
+	mp3 mp3adu mp3adufloat mp3float mp2 ac3 aac amrnb amrwb \
+	png mjpeg jpeg2000 \
 	wmapro wmav1 wmav2 \
-	ape flac vorbis opus \
+	ape alac flac vorbis opus \
 	pcm_s16le pcm_s16be pcm_s32le pcm_s32be pcm_f32le pcm_f32be
 
 
@@ -181,7 +182,7 @@ FFMPEG_COMMON_ARGS = \
 	--disable-xlib \
 	--disable-zlib
 
-MP4_ENCODERS = libmp3lame libfdk_aac libopus wmav1 wmav2 ac3 flac pcm_s16le pcm_s16be
+MP4_ENCODERS = libmp3lame libfdk_aac libopus wmav1 wmav2 ac3 alac flac pcm_s16le pcm_s16be
 MP4_MUXERS = mp4 mp3 mp2 adts wav ac3 asf ogg flac null
 MP4_ARGS = \
 	--enable-gpl \
